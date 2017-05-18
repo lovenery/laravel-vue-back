@@ -14,7 +14,21 @@ class ProductsController extends Controller
     }
     public function store(Request $request)
     {
-        $product = Product::create($request->all() + [ 'user_id' => Auth::id() ]);
+        // \Log::info($request->all()); // in laravel.log
+        $exploded = explode(',', $request->image);
+        $decode = base64_decode($exploded[1]);
+        if (str_contains($exploded[0], 'jpeg')) {
+            $extension = 'jpg';
+        } else {
+            $extension = 'png';
+        }
+        $fileName = str_random() . '.' . $extension;
+        $path = public_path() . '/' . $fileName;
+        file_put_contents($path, $decode);
+        $product = Product::create($request->except('image') + [
+            'user_id' => Auth::id(),
+            'image' => $fileName
+        ]);
         return $product;
     }
     public function show($id)
